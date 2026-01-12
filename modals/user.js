@@ -4,7 +4,8 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: true
+      required: true,
+      
     },
 
     email: {
@@ -15,7 +16,8 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true
+      required: true,
+     
     },
 
     phone: String,
@@ -39,6 +41,9 @@ const userSchema = new mongoose.Schema(
       enum: ["approved", "pending"],
       default: "pending"
     },
+     adminProfile: {
+     adminVerify: String,
+     },
 
     // 👨‍🏫 Teacher-only fields
     teacherProfile: {
@@ -47,18 +52,18 @@ const userSchema = new mongoose.Schema(
       degree: [String],
       graduationCity: String,
       university: [String],
-      studentId: String,
-      certification: String
+      studentId: Number,
+      certification: Number
     },
 
     // 🎓 Student-only fields
     studentProfile: {
       studyType: String, // School / College / University
-      city: String,
+      City: String,
       classLevel: String
     }
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports  = mongoose.model("User", userSchema);

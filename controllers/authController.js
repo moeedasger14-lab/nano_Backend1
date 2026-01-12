@@ -1,4 +1,5 @@
 var User = require("../modals/user");
+const bcrypt = require("bcryptjs");
 
 exports.signup = async (req, res) => {
   try {
@@ -10,44 +11,53 @@ exports.signup = async (req, res) => {
       gender,
       country,
       role,
+      adminVerify,
 
       // teacher fields
       expertise,
       teachingExperience,
       degree,
-      graduation,
+      graduationCity,
       university,
-      ids,
+      studentId,
       certification,
 
       // student fields
-      read,
-      live,
-      class: classLevel
+      studyType: read,
+      City: live,
+      class: classLevel,
     } = req.body;
 
-    // check duplicate email
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "Email already exists" });
+    // 🔒 Duplicate email check
+   // const exists = await User.findOne({ email });
+   // if (exists) {
+  //    return res.status(400).json({ message: "Email already exists" });
+  //  }
+
+    // 🔐 ADMIN CHECK
+    if (role === "admin") {
+      if (email !== "moeedasger4@gmail.com") {
+        return res.status(403).json({ message: "Not authorized as admin" });
+      }
+
+      if (adminVerify !== "admin456") {
+        return res.status(403).json({ message: "Invalid admin verify code" });
+      }
     }
 
-    // role-based status
-    let status = "pending";
-    if (role === "admin" || role === "student") {
-      status = "approved";
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       fullName,
       email,
-      password,
+      password: hashedPassword,
       phone,
       gender,
       country,
       role,
-      status,
 
+      status: role === "admin" ? "approved" : "pending",
+      adminProfile: role === "admin" ? { adminVerify } : undefined,
       teacherProfile:
         role === "teacher"
           ? {
@@ -64,44 +74,25 @@ exports.signup = async (req, res) => {
       studentProfile:
         role === "student"
           ? {
-              studyType: read,
-              city: live,
-              classLevel
+             studyType: read,
+              City: live,
+              class: classLevel,
             }
           : undefined
     });
 
     res.status(201).json({
       message:
-        role === "teacher"
-          ? "Signup successful. Await admin approval."
-          : "Signup successful",
-      user
+        role === "admin"
+          ? "Admin account created"
+          : "Signup successful. Await admin approval.",
+      user: {
+        id: user._id,
+        role: user.role,
+        status: user.status
+      }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.password !== password) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    if (user.role === "teacher" && user.status !== "approved") {
-      return res.status(403).json({ message: "Await admin approval" });
-    }
-
-    res.json({ message: "Login successful", user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: error.message });
   }
 };
