@@ -17,9 +17,9 @@ exports.signup = async (req, res) => {
       expertise,
       teachingExperience,
       degree,
-      graduationCity,
+      graduationCity: graduation,
       university,
-      studentId,
+      studentId: ids,
       certification,
 
       // student fields
@@ -33,7 +33,12 @@ exports.signup = async (req, res) => {
    // if (exists) {
   //    return res.status(400).json({ message: "Email already exists" });
   //  }
-
+if (role === "admin") {
+  const adminExists = await User.findOne({ role: "admin" });
+  if (adminExists) {
+    return res.status(403).json({ message: "Admin already exists" });
+  }
+}
     // 🔐 ADMIN CHECK
     if (role === "admin") {
       if (email !== "moeedasger4@gmail.com") {
