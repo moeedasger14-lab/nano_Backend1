@@ -1,7 +1,11 @@
-const express = require("express");
+cconst express = require("express");
 const router = express.Router();
-const { signup } = require("../controllers/authController");
 
+// ✅ destructure functions
+const { signup, getMe } = require("../controllers/authController");
+
+// routes
 router.post("/signup", signup);
+router.get("/me", getMe);
 
 module.exports = router;

@@ -101,3 +101,21 @@ if (role === "admin") {
     res.status(500).json({ message: error.message });
   }
 };
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    res.json({
+      id: user._id,
+      role: user.role,
+      status: user.status,
+      email: user.email
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
