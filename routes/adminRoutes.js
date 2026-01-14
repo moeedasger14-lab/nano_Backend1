@@ -1,7 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../modals/user.js");
+router.get("/users/status/:id", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
 
+  res.json({
+    status: user.status,
+    role: user.role
+  });
+});
 router.get("/status/:id", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.json({ status: user.status });
