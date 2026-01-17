@@ -92,7 +92,7 @@ if (role === "admin") {
           ? "Admin account created"
           : "Signup successful. Await admin approval.",
       user: {
-        id: user._id,
+        _id: user._id,
         role: user.role,
         status: user.status
       }

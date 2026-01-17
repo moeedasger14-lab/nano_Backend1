@@ -1,34 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../modals/user.js");
-router.get("/users/status/:id", async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) return res.status(404).json({ message: "User not found" });
 
-  res.json({
-    status: user.status,
-    role: user.role
-  });
-});
-router.get("/status/:id", async (req, res) => {
-  const user = await User.findById(req.params.id);
-  res.json({ status: user.status });
-});
-// Pending teachers
-router.get("/teachers/pending", async (req, res) => {
-  try {
-    const teachers = await User.find({
-      role: "teacher",
-      status: "pending",
-    }).select(
-      "fullName email gender country teacherProfile"
-    );
-
-    res.json(teachers);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
 router.get("/check-status", async (req, res) => {
   const user = await User.findOne({ email: req.query.email });
   if (!user) return res.status(404).json({});
@@ -71,22 +44,7 @@ router.get("/teachers/approved", async (req, res) => {
   });
   res.json(teachers);
 });
-router.get("/users/status/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("status role");
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json({
-      status: user.status,
-      role: user.role,
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
 // DELETE teacher on logout
 router.delete("/teacher-logout/:id", async (req, res) => {
   try {
@@ -128,6 +86,22 @@ router.get("/students/approved", async (req, res) => {
     });
 
     res.json(students);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+router.get("/users/status/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("status role");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      status: user.status,
+      role: user.role
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
