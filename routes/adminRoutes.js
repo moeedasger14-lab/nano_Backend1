@@ -37,6 +37,13 @@ router.delete("/users/:id/reject", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+router.get("/teachers/pending", async (req, res) => {
+  const teachers = await User.find({
+    role: "teacher",
+    status: "pending"
+  });
+  res.json(teachers);
+});
 router.get("/teachers/approved", async (req, res) => {
   const teachers = await User.find({
     role: "teacher",
