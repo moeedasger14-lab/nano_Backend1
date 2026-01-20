@@ -1,49 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../modals/user.js");
+const courseCtrl = require("../controllers/courseController");
+const protect = require("../middlewares/protectRoute");
+const User = require("../modals/user");
 
-router.get("/check-status", async (req, res) => {
-  const user = await User.findOne({ email: req.query.email });
-  if (!user) return res.status(404).json({});
-
-  res.json({
-    status: user.status,
-    user,
-  });
-});
-router.patch("/users/:id/approve", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.status = "approved";
-    await user.save();
-
-    res.json({ message: "User approved" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Reject user
-router.delete("/users/:id/reject", async (req, res) => {
-  try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "User rejected and removed" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+// Teacher
 router.get("/teachers/pending", async (req, res) => {
   const teachers = await User.find({
     role: "teacher",
-    status: "pending"
+    status: "pending",
   });
   res.json(teachers);
 });
+
+// 🔹 APPROVED TEACHERS
 router.get("/teachers/approved", async (req, res) => {
   const teachers = await User.find({
     role: "teacher",
@@ -52,65 +22,46 @@ router.get("/teachers/approved", async (req, res) => {
   res.json(teachers);
 });
 
-// DELETE teacher on logout
-router.delete("/teacher-logout/:id", async (req, res) => {
-  try {
-    const teacherId = req.params.id;
-
-    // delete courses created by teacher
-    await Course.deleteMany({ teacher: teacherId });
-
-    // delete teacher
-    await User.findByIdAndDelete(teacherId);
-
-    // optional: save notification
-    await Notification.create({
-      message: "Teacher logged out and was removed",
-    });
-
-    res.json({ message: "Teacher removed successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+// 🔹 PENDING STUDENTS
 router.get("/students/pending", async (req, res) => {
   const students = await User.find({
     role: "student",
     status: "pending",
   });
-
   res.json(students);
 });
-router.get("/notifications", async (req, res) => {
-  const pendingCount = await User.countDocuments({ status: "pending" });
-  res.json({ pendingCount });
-});
+
+// 🔹 APPROVED STUDENTS
 router.get("/students/approved", async (req, res) => {
-  try {
-    const students = await User.find({
-      role: "student",
-      status: "approved",
-    });
-
-    res.json(students);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+  const students = await User.find({
+    role: "student",
+    status: "approved",
+  });
+  res.json(students);
 });
-router.get("/users/status/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("status role");
+router.post("/admin/course/approve/:id", async (req, res) => {
+  const courseId = req.params.id;
+  const course = await CoursesPending.findById(courseId);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+  if (!course) return res.status(404).send("Course not found");
 
-    res.json({
-      status: user.status,
-      role: user.role
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+  // Move to approved collection
+  const approvedCourse = new CoursesApproved({
+    teacherId: course.teacherId,
+    title: course.title,
+    description: course.description,
+    status: "approved"
+  });
+  await approvedCourse.save();
+  await CoursesPending.findByIdAndDelete(courseId);
+
+  res.send("Course approved");
+});
+
+// Reject course
+router.post("/admin/course/reject/:id", async (req, res) => {
+  const courseId = req.params.id;
+  await CoursesPending.findByIdAndDelete(courseId);
+  res.send("Course rejected");
 });
 module.exports = router;

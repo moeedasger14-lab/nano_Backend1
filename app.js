@@ -29,10 +29,12 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 // routes
-const authRoutes = require("./routes/authRoutes");
+const authRoutes = require("./routes/authRoutes.js");
+const adminRoutes = require("./routes/adminRoutes.js");
+const courseRoutes = require("./routes/courseRouthes.js");
 app.use("/api/auth", authRoutes);
-const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/admin", adminRoutes);
+app.use("/api/courses", courseRoutes);
 // MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
