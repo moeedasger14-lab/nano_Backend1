@@ -57,11 +57,67 @@ router.post("/admin/course/approve/:id", async (req, res) => {
 
   res.send("Course approved");
 });
+router.patch("/users/:id/approve", async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { status: "approved" },
+      { new: true }
+    );
 
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ message: "User approved", user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * ❌ REJECT USER (delete)
+ */
+router.delete("/users/:id/reject", async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ message: "User rejected & deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 // Reject course
 router.post("/admin/course/reject/:id", async (req, res) => {
   const courseId = req.params.id;
   await CoursesPending.findByIdAndDelete(courseId);
   res.send("Course rejected");
+});
+router.get("/users/status/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("role status");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user); // { role, status }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+router.get("/users/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select(
+      "fullName email teachingexperience expertise gender"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 module.exports = router;
