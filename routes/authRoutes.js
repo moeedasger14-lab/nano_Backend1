@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const User  = reqiure("../modals/user");
+const User  = require("../modals/user");
+const protect = require("../middlewares/protectRoute")
 // ✅ destructure functions
 const { signup, getMe } = require("../controllers/authController");
 // GET logged-in user profile
