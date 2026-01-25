@@ -14,14 +14,13 @@ exports.createCourse = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-
+ 
 
 // TEACHER sees own courses
 exports.getTeacherCourses = async (req, res) => {
   const courses = await Course.find({ teacherId: req.user._id });
   res.json(courses);
 };
-
 // STUDENTS see approved courses
 
 // ADMIN: approve course

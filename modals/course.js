@@ -8,12 +8,11 @@ const courseSchema = new mongoose.Schema(
     },
 
     // 🔑 link course to teacher
-    teacher: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
+   teacher: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  required: true,
+},
     expertise: {
       type: String,
       enum: ["math", "urdu", "english"],

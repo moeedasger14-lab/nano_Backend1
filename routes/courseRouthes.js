@@ -4,7 +4,7 @@ const controller = require("../controllers/courseController");
 const protect = require("../middlewares/protectRoute")
 const Course = require("../modals/course")
 // Teacher
-router.post("/create", protect, async (req, res) => {
+router.post("/create",  async (req, res) => {
   try {
     const course = await Course.create({
       ...req.body,
@@ -25,8 +25,8 @@ router.get("/approved", controller.getApprovedCourses);
 router.patch("/approve/:id", controller.approveCourse);
 router.patch("/reject/:id", controller.rejectCourse);
 
-router.get("/teacher", protect, controller.getTeacherCourses);
+router.get("/teacher",  controller.getTeacherCourses);
 
 
-
+ 
 module.exports = router;
