@@ -108,7 +108,7 @@ router.get("/users/status/:id", async (req, res) => {
 router.get("/users/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select(
-      "fullName email teachingexperience expertise gender"
+      "fullName email teachingExperience expertise gender"
     );
 
     if (!user) {

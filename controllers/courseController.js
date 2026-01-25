@@ -15,28 +15,6 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// ADMIN sees pending courses
-exports.getPendingCourses = async (req, res) => {
-  const courses = await Course.find({ status: "pending" })
-    .populate("teacherId", "fullName");
-
-  res.json(courses);
-};
-
-// ADMIN approves course
-exports.approveCourse = async (req, res) => {
-  await Course.findByIdAndUpdate(req.params.id, {
-    status: "approved",
-  });
-
-  res.json({ message: "Course approved" });
-};
-
-// ADMIN rejects course
-exports.rejectCourse = async (req, res) => {
-  await Course.findByIdAndDelete(req.params.id);
-  res.json({ message: "Course rejected" });
-};
 
 // TEACHER sees own courses
 exports.getTeacherCourses = async (req, res) => {
@@ -46,13 +24,42 @@ exports.getTeacherCourses = async (req, res) => {
 
 // STUDENTS see approved courses
 
-exports.getApprovedCourses = async (req, res) => {
+// ADMIN: approve course
+exports.approveCourse = async (req, res) => {
   try {
-    const courses = await Course.find({ status: "approved" })
-      .populate("teacherId", "name");
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
+      { status: "approved" },
+      { new: true }
+    );
 
-    res.status(200).json(courses);
+    res.json({ message: "Course approved", course });
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch courses" });
+    res.status(500).json({ message: err.message });
   }
+};
+
+// ADMIN: reject course
+exports.rejectCourse = async (req, res) => {
+  try {
+    await Course.findByIdAndUpdate(req.params.id, {
+      status: "rejected",
+    });
+
+    res.json({ message: "Course rejected" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ADMIN: pending courses
+exports.getPendingCourses = async (req, res) => {
+  const courses = await Course.find({ status: "pending" }).populate("teacher");
+  res.json(courses);
+};
+
+// ADMIN: approved courses
+exports.getApprovedCourses = async (req, res) => {
+  const courses = await Course.find({ status: "approved" }).populate("teacher");
+  res.json(courses);
 };

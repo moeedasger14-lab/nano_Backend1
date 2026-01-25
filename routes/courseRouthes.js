@@ -1,19 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const courseCtrl = require("../controllers/courseController");
-const protect = require("../middlewares/protectRoute");
-
-
+const controller = require("../controllers/courseController");
+const protect = require("../middlewares/protectRoute")
+const Course = require("../modals/course")
 // Teacher
-router.post("/", protect, courseCtrl.createCourse);
-router.get("/teacher", protect, courseCtrl.getTeacherCourses);
+router.post("/create", protect, async (req, res) => {
+  try {
+    const course = await Course.create({
+      ...req.body,
+      teacherId: req.user._id, // ✅ CORRECT
+      status: "pending",
+    });
 
-// Admin
-router.get("/pending", protect, courseCtrl.getPendingCourses);
-router.patch("/:id/approve", protect, courseCtrl.approveCourse);
-router.delete("/:id/reject", protect, courseCtrl.rejectCourse);
+    res.status(201).json(course);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
-// Student
-router.get("/approved", courseCtrl.getApprovedCourses);
+
+router.get("/pending", controller.getPendingCourses);
+router.get("/approved", controller.getApprovedCourses);
+
+router.patch("/approve/:id", controller.approveCourse);
+router.patch("/reject/:id", controller.rejectCourse);
+
+router.get("/teacher", protect, controller.getTeacherCourses);
+
+
 
 module.exports = router;
